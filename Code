@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Assignment 1 - Graph Algorithms</title>
+
+<style>
+:root {
+  font-family: Arial, sans-serif;
+  color: #172033;
+  background: #f4f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+header {
+  background: #173b68;
+  color: white;
+  padding: 24px 18px;
+}
+
+header h1 {
+  margin: 0 0 8px;
+  font-size: 1.55rem;
+}
+
+header p {
+  margin: 0;
+  opacity: .9;
+}
+
+main {
+  max-width: 1050px;
+  margin: 22px auto;
+  padding: 0 16px 35px;
+}
+
+.card {
+  background: white;
+  border: 1px solid #dce4ef;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+h2 {
+  margin: 0 0 14px;
+  color: #173b68;
+  font-size: 1.2rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
+select, button {
+  padding: 10px 12px;
+  border-radius: 7px;
+  border: 1px solid #bdc9d9;
+  font-size: 1rem;
+}
+
+button {
+  background: #1764ad;
+  border-color: #1764ad;
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+button:hover {
+  background: #104d87;
+}
+
+button.secondary {
+  background: #eef4fb;
+  color: #173b68;
+  border-color: #cbd8e8;
+}
+
+.result {
+  margin-top: 14px;
+  padding: 13px;
+  border-radius: 8px;
+  background: #eef6ff;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  color: #536174;
+  font-size: .92rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: .93rem;
+}
+
+th, td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #e5eaf1;
+  text-align: left;
+}
+
+th {
+  background: #f0f4f9;
+  color: #173b68;
+}
+
+.status {
+  font-weight: 700;
+}
+
+.pass {
+  color: #137342;
+}
+
+.fail {
+  color: #b42318;
+}
+
+footer {
+  text-align: center;
+  color: #657286;
+  padding: 10px 16px 28px;
+  font-size: .88rem;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Data Structures and Algorithms — Assignment 1</h1>
+<p>Weighted, undirected mobile money agent network</p>
+</header>
+
+<main>
+
+<section class="card">
+<h2>1. Find the shortest route (Dijkstra's algorithm)</h2>
+
+<div class="controls">
+
+<label>
+Starting agent
+<select id="start"></select>
+</label>
+
+<label>
+Destination agent
+<select id="end"></select>
+</label>
+
+<button id="findRoute">
+Find shortest route
+</button>
+
+</div>
+
+<div id="routeResult" class="result">
+Select a starting agent and destination.
+</div>
+</section>
+
+
+<section class="card">
+<h2>2. Minimum Spanning Tree (Kruskal's algorithm)</h2>
+
+<p class="muted">
+Kruskal's algorithm selects the lowest-weight edges
+without creating cycles until all agents are linked.
+</p>
+
+<button id="findMst">Calculate MST</button>
+
+<div id="mstResult" class="result">
+Press the button to calculate the MST.
+</div>
+
+<div id="mstTable" class="table-wrap"></div>
+</section>
+
+
+<section class="card">
+<h2>3. Test the algorithms</h2>
+
+<button id="runTests" class="secondary">
+Run built-in tests
+</button>
+
+<div id="testResult" class="result">
+Run the tests to check the algorithms.
+</div>
+
+<div id="testTable" class="table-wrap"></div>
+</section>
+
+
+<section class="card">
+<h2>4. Agent locations</h2>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Agent location</th>
+</tr>
+</thead>
+
+<tbody id="locations"></tbody>
+</table>
+</div>
+</section>
+
+
+<section class="card">
+<h2>5. Network connections</h2>
+
+<p class="muted">
+Each connection works in both directions.
+Weights represent assumed travel time in minutes.
+</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>From</th>
+<th>To</th>
+<th>Travel time</th>
+</tr>
+</thead>
+
+<tbody id="edges"></tbody>
+</table>
+</div>
+</section>
+
+</main>
+
+<footer>
+Self-contained browser application.
+No installation required.
+</footer>
+
+
+<script>
+
+"use strict";
+
+// Agent codes and locations
+
+const locations = {
+A: "Blantyre CBD",
+B: "Ndirande",
+C: "Chirimba",
+D: "Kameza",
+E: "Machinjiri",
+F: "Chichiri",
+G: "Limbe",
+H: "Bangwe",
+I: "Mpingwe",
+J: "Mapanga",
+K: "Namiwawa",
+L: "Chilomoni",
+M: "Manyowe",
+N: "Chigumula",
+O: "BCA",
+P: "Chilobwe",
+Q: "Zingwangwa",
+R: "Manja",
+S: "Soche",
+T: "Nancholi"
+};
+
+
+// Connections between agents
+// Format: [first agent, second agent, travel time]
+
+const edges = [
+
+["A","B",4],
+["B","C",6],
+["C","D",5],
+["D","E",7],
+
+["F","G",3],
+["G","H",5],
+["H","I",4],
+["I","J",6],
+
+["K","L",6],
+["L","M",3],
+["M","N",5],
+["N","O",4],
+
+["P","Q",5],
+["Q","R",4],
+["R","S",6],
+["S","T",3],
+
+["A","F",7],
+["B","G",4],
+["C","H",8],
+["D","I",6],
+
+["E","J",5],
+["F","K",5],
+["G","L",7],
+["H","M",3],
+
+["I","N",8],
+["J","O",4],
+["K","P",6],
+["L","Q",5],
+
+["M","R",7],
+["N","S",4],
+["O","T",6]
+
+];
+
+
+const agentCodes = Object.keys(locations);
+
+
+// Create the graph
+
+function buildGraph(nodes, edgeList) {
+
+const graph = {};
+
+for (const node of nodes) {
+graph[node] = {};
+}
+
+for (const [u, v, weight] of edgeList) {
+
+if (!graph[u] || !graph[v]) {
+throw new Error("Unknown edge endpoint");
+}
+
+if (!Number.isFinite(weight) || weight < 0) {
+throw new Error("Weights must be finite and non-negative");
+}
+
+graph[u][v] = weight;
+graph[v][u] = weight;
+
+}
+
+return graph;
+}
+
+
+// Dijkstra's algorithm
+
+function dijkstra(graph, start) {
+
+if (!graph[start]) {
+throw new Error("Unknown start or destination");
+}
+
+const distance = {};
+const previous = {};
+const unvisited = new Set(Object.keys(graph));
+
+for (const node of Object.keys(graph)) {
+
+distance[node] = Infinity;
+previous[node] = null;
+
+}
+
+distance[start] = 0;
+
+
+while (unvisited.size > 0) {
+
+let current = null;
+
+for (const node of unvisited) {
+
+if (
+current === null ||
+distance[node] < distance[current]
+) {
+current = node;
+}
+
+}
+
+if (
+current === null ||
+distance[current] === Infinity
+) {
+break;
+}
+
+unvisited.delete(current);
+
+
+// Check neighbouring agents
+
+for (const neighbour of Object.keys(graph[current])) {
+
+if (!unvisited.has(neighbour)) {
+continue;
+}
+
+const candidate =
+distance[current] + graph[current][neighbour];
+
+if (candidate < distance[neighbour]) {
+
+distance[neighbour] = candidate;
+previous[neighbour] = current;
+
+}
+
+}
+
+}
+
+return { distance, previous };
+
+}
+
+
+// Find shortest path
+
+function shortestPath(graph, start, end) {
+
+if (!graph[start] || !graph[end]) {
+throw new Error("Unknown start or destination");
+}
+
+const { distance, previous } = dijkstra(graph, start);
+
+if (distance[end] === Infinity) {
+
+return {
+distance: Infinity,
+path: []
+};
+
+}
+
+const path = [];
+
+let current = end;
+
+while (current !== null) {
+
+path.push(current);
+current = previous[current];
+
+}
+
+path.reverse();
+
+return {
+distance: distance[end],
+path
+};
+
+}
+
+
+// Kruskal's algorithm
+
+function kruskal(nodes, edgeList) {
+
+const parent = {};
+const rank = {};
+
+for (const node of nodes) {
+
+parent[node] = node;
+rank[node] = 0;
+
+}
+
+
+// Find operation
+
+function find(node) {
+
+if (parent[node] !== node) {
+parent[node] = find(parent[node]);
+}
+
+return parent[node];
+
+}
+
+
+// Union operation
+
+function union(a, b) {
+
+let rootA = find(a);
+let rootB = find(b);
+
+if (rootA === rootB) {
+return false;
+}
+
+if (rank[rootA] < rank[rootB]) {
+[rootA, rootB] = [rootB, rootA];
+}
+
+parent[rootB] = rootA;
+
+if (rank[rootA] === rank[rootB]) {
+rank[rootA]++;
+}
+
+return true;
+
+}
+
+
+// Sort edges by weight
+
+const sortedEdges = [...edgeList].sort((a, b) =>
+a[2] - b[2] ||
+a[0].localeCompare(b[0]) ||
+a[1].localeCompare(b[1])
+);
+
+const selected = [];
+let total = 0;
+
+
+// Select edges without creating cycles
+
+for (const [u, v, weight] of sortedEdges) {
+
+if (union(u, v)) {
+
+selected.push([u, v, weight]);
+total += weight;
+
+if (selected.length === nodes.length - 1) {
+break;
+}
+
+}
+
+}
+
+return {
+edges: selected,
+total,
+connected: selected.length === nodes.length - 1
+};
+
+}
+
+
+const graph = buildGraph(agentCodes, edges);
+
+
+function names(code) {
+return `${code} — ${locations[code]}`;
+}
+
+
+// Display shortest route
+
+function showRoute() {
+
+const start = document.getElementById("start").value;
+const end = document.getElementById("end").value;
+
+const resultBox = document.getElementById("routeResult");
+
+try {
+
+const result = shortestPath(graph, start, end);
+
+if (result.path.length === 0) {
+
+resultBox.textContent =
+`No route exists from ${names(start)} to ${names(end)}.`;
+
+return;
+
+}
+
+const routeNames = result.path.map(names).join(" → ");
+
+resultBox.innerHTML =
+
+`<strong>Shortest route:</strong> ${routeNames}<br>
+<strong>Total travel time:</strong> ${result.distance} minutes`;
+
+} catch (error) {
+
+resultBox.textContent = error.message;
+
+}
+
+}
+
+
+// Display Minimum Spanning Tree
+
+function showMst() {
+
+const result = kruskal(agentCodes, edges);
+
+document.getElementById("mstResult").innerHTML =
+
+`<strong>Number of selected edges:</strong> ${result.edges.length}<br>
+<strong>Total MST weight:</strong> ${result.total} minutes<br>
+<strong>All agents connected:</strong> ${result.connected ? "Yes" : "No"}`;
+
+
+document.getElementById("mstTable").innerHTML =
+
+`<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Selected edge</th>
+<th>Weight</th>
+<th>Running total</th>
+</tr>
+</thead>
+<tbody>`
+
++ result.edges.map((edge, i) => {
+
+const running = result.edges
+.slice(0, i + 1)
+.reduce((sum, item) => sum + item[2], 0);
+
+return `
+<tr>
+<td>${i + 1}</td>
+<td>${edge[0]} – ${edge[1]}</td>
+<td>${edge[2]}</td>
+<td>${running}</td>
+</tr>`;
+
+}).join("")
+
++ `</tbody></table>`;
+
+}
+
+
+// Test the algorithms
+
+function runTests() {
+
+const tests = [];
+
+function check(name, condition, detail) {
+
+tests.push({
+name,
+passed: Boolean(condition),
+detail
+});
+
+}
+
+
+// Test 1: Main route
+
+const main = shortestPath(graph, "A", "T");
+
+check(
+"Main route A to T",
+main.distance === 28 &&
+main.path.join("-") === "A-B-G-H-M-N-S-T",
+`${main.distance}; ${main.path.join(" - ")}`
+);
+
+
+// Test 2: Reverse route
+
+const reverse = shortestPath(graph, "T", "A");
+
+check(
+"Reverse route T to A",
+reverse.distance === 28 &&
+reverse.path.join("-") === "T-S-N-M-H-G-B-A",
+`${reverse.distance}; ${reverse.path.join(" - ")}`
+);
+
+
+// Test 3: Same agent
+
+const same = shortestPath(graph, "A", "A");
+
+check(
+"Same agent A to A",
+same.distance === 0 &&
+same.path.join("") === "A",
+`${same.distance}; ${same.path.join(" - ")}`
+);
+
+
+// Test 4: Direct neighbour
+
+const direct = shortestPath(graph, "A", "B");
+
+check(
+"Direct neighbour A to B",
+direct.distance === 4 &&
+direct.path.join("-") === "A-B",
+`${direct.distance}; ${direct.path.join(" - ")}`
+);
+
+
+// Test 5: Disconnected destination
+
+const disconnectedGraph =
+buildGraph(["A","B","C"], [["A","B",4]]);
+
+const disconnected =
+shortestPath(disconnectedGraph, "A", "C");
+
+check(
+"Disconnected destination",
+disconnected.distance === Infinity &&
+disconnected.path.length === 0,
+"Unreachable; empty path"
+);
+
+
+// Test 6: Zero-weight edge
+
+const zeroGraph =
+buildGraph(
+["A","B","C"],
+[["A","B",0],["B","C",2],["A","C",5]]
+);
+
+const zero = shortestPath(zeroGraph, "A", "C");
+
+check(
+"Zero-weight edge",
+zero.distance === 2 &&
+zero.path.join("-") === "A-B-C",
+`${zero.distance}; ${zero.path.join(" - ")}`
+);
+
+
+// Test 7: Negative weight
+
+let negativeRejected = false;
+
+try {
+
+buildGraph(["A","B"], [["A","B",-2]]);
+
+} catch (e) {
+
+negativeRejected =
+e.message === "Weights must be finite and non-negative";
+
+}
+
+check(
+"Negative weight rejected",
+negativeRejected,
+"Weights must be finite and non-negative"
+);
+
+
+// Test 8: Invalid source
+
+let invalidStartRejected = false;
+
+try {
+
+shortestPath(graph, "Z", "T");
+
+} catch (e) {
+
+invalidStartRejected =
+e.message === "Unknown start or destination";
+
+}
+
+check(
+"Invalid source rejected",
+invalidStartRejected,
+"Unknown start or destination"
+);
+
+
+// Test 9: Equal alternatives
+
+const tieGraph =
+buildGraph(
+["A","B","C","D"],
+[
+["A","B",1],
+["A","C",1],
+["B","D",1],
+["C","D",1]
+]
+);
+
+const tie = shortestPath(tieGraph, "A", "D");
+
+check(
+"Equal alternatives",
+tie.distance === 2,
+`${tie.distance}; ${tie.path.join(" - ")}`
+);
+
+
+// Test 10: Invalid edge endpoint
+
+let badEndpointRejected = false;
+
+try {
+
+buildGraph(["A","B"], [["A","Z",1]]);
+
+} catch (e) {
+
+badEndpointRejected =
+e.message === "Unknown edge endpoint";
+
+}
+
+check(
+"Invalid edge endpoint rejected",
+badEndpointRejected,
+"Unknown edge endpoint"
+);
+
+
+// Test 11: Non-finite weight
+
+let infiniteRejected = false;
+
+try {
+
+buildGraph(["A","B"], [["A","B",Infinity]]);
+
+} catch (e) {
+
+infiniteRejected =
+e.message === "Weights must be finite and non-negative";
+
+}
+
+check(
+"Non-finite weight rejected",
+infiniteRejected,
+"Weights must be finite and non-negative"
+);
+
+
+// Test 12: Minimum Spanning Tree
+
+const mst = kruskal(agentCodes, edges);
+
+check(
+"Minimum spanning tree",
+mst.edges.length === 19 &&
+mst.total === 81 &&
+mst.connected,
+`${mst.edges.length} edges; total ${mst.total}; connected ${mst.connected}`
+);
+
+
+// Test 13: All-pairs cross-check
+
+let allPairsPass = true;
+
+for (const source of agentCodes) {
+
+const fromSource = dijkstra(graph, source);
+
+for (const destination of agentCodes) {
+
+const route = shortestPath(graph, source, destination);
+
+const reconstructedCost =
+route.path.slice(1).reduce((sum, node, index) =>
+
+sum + graph[route.path[index]][node], 0
+);
+
+if (
+route.distance !== fromSource.distance[destination] ||
+(
+route.path.length > 0 &&
+reconstructedCost !== route.distance
+)
+) {
+
+allPairsPass = false;
+
+}
+
+}
+
+}
+
+check(
+"All-pairs cross-check (400 routes)",
+allPairsPass,
+"All 400 distances and reconstructed path costs checked"
+);
+
+
+// Display test results
+
+const passed = tests.filter(test => test.passed).length;
+
+document.getElementById("testResult").innerHTML =
+
+`<strong>${passed} of ${tests.length} tests passed.</strong>`;
+
+document.getElementById("testTable").innerHTML =
+
+`<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Result</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>`
+
++ tests.map(test => `
+
+<tr>
+<td>${test.name}</td>
+
+<td class="status ${test.passed ? "pass" : "fail"}">
+${test.passed ? "PASS" : "FAIL"}
+</td>
+
+<td>${test.detail}</td>
+</tr>
+
+`).join("")
+
++ `</tbody></table>`;
+
+}
+
+
+// Display agents and connections
+
+function populatePage() {
+
+for (const id of ["start", "end"]) {
+
+const select = document.getElementById(id);
+
+for (const code of agentCodes) {
+
+const option = document.createElement("option");
+
+option.value = code;
+option.textContent = names(code);
+
+select.appendChild(option);
+
+}
+
+}
+
+document.getElementById("start").value = "A";
+document.getElementById("end").value = "T";
+
+
+document.getElementById("locations").innerHTML =
+
+agentCodes.map(code => `
+
+<tr>
+<td>${code}</td>
+<td>${locations[code]}</td>
+</tr>
+
+`).join("");
+
+
+document.getElementById("edges").innerHTML =
+
+edges.map(([u, v, w]) => `
+
+<tr>
+<td>${u}</td>
+<td>${v}</td>
+<td>${w}</td>
+</tr>
+
+`).join("");
+
+
+document.getElementById("findRoute")
+.addEventListener("click", showRoute);
+
+document.getElementById("findMst")
+.addEventListener("click", showMst);
+
+document.getElementById("runTests")
+.addEventListener("click", runTests);
+
+showRoute();
+
+}
+
+
+populatePage();
+
+</script>
+
+</body>
+</html>
